@@ -1,26 +1,45 @@
 import numpy as np
-from sklearn.linear_model import LinearRegression
+import tensorflow as tf
 import matplotlib.pyplot as plt
 
-x = np.arange(-5,5,0.1)
-n = len(x)
-newX = np.reshape(x,(n,1))
+x1 = tf.Variable(tf.random.normal(shape=[1]))
+x0 = tf.Variable(tf.random.normal(shape=[1]))
 
-y = np.dot(newX, np.array([1])) + 1
+#Liear Regression
+def Linear_Model(x):
+    return x1*x +x0
+
+#Loss function
+def MES_LOSS(yPred, y):
+    return tf.reduce_mean(tf.square(yPred-y))
+
+#Optimizer
+Optimizer = tf.optimizers.SGD(1e-2) 
+def Training_Step(x,y):
+    with tf.GradientTape() as tape:
+        yPred = Linear_Model(x)
+        loss = MES_LOSS(yPred, y)
+    gradient = tape.gradient(loss, [x1,x0])
+    Optimizer.apply_gradients(zip(gradient, [x1,x0]))
+
+
+#Training Data
+x = np.arange(-5,5,0.1)
+y = 1*(x) + 1
+
+n = len(x)
+
 yNoise = 1 * np.random.normal(size=n)
 y = y + yNoise
 
-newY = np.reshape(y,(n,1))
+#Traning
+for i in range(1000):
+    Training_Step(x, y)
 
-linear_regression = LinearRegression()
- 
-reg = linear_regression.fit(newX, y)
-
-# print(reg.score(newX, y))
-# print(reg.coef_)
-# print(reg.intercept_)
+print(x1.numpy())
+print(x0.numpy())
 
 plt.scatter(x, y)
-plt.plot(newX, reg.coef_*x + 1, c="red")
+plt.plot(x, x0 + x1*x, c="red")
 
 plt.show()
